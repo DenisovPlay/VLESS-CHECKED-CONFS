@@ -51,23 +51,14 @@ def _setup_logging(verbose: bool) -> None:
 # Файлы вывода
 SAFE_FILE = OUTPUT_DIR / "safe.txt"
 SAFE_MOBILE_FILE = OUTPUT_DIR / "safe_mobile.txt"
-SAFE_B64_FILE = OUTPUT_DIR / "safe_base64.txt"
-SAFE_MOBILE_B64_FILE = OUTPUT_DIR / "safe_mobile_base64.txt"
-
 WHITE_FILE = OUTPUT_DIR / "white.txt"
 WHITE_MOBILE_FILE = OUTPUT_DIR / "white_mobile.txt"
-WHITE_B64_FILE = OUTPUT_DIR / "white_base64.txt"
-WHITE_MOBILE_B64_FILE = OUTPUT_DIR / "white_mobile_base64.txt"
-
 ALL_FILE = OUTPUT_DIR / "all.txt"
-ALL_MOBILE_FILE = OUTPUT_DIR / "all_mobile.txt"
-ALL_B64_FILE = OUTPUT_DIR / "all_base64.txt"
-ALL_MOBILE_B64_FILE = OUTPUT_DIR / "all_mobile_base64.txt"
 
 
 async def _write_output(results: list[CheckResult]) -> tuple[int, int]:
     """
-    Записывает живые конфиги в текстовые и base64 подписки.
+    Записывает живые конфиги в текстовые подписки.
     Возвращает (safe_count, white_count).
     """
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -93,56 +84,74 @@ async def _write_output(results: list[CheckResult]) -> tuple[int, int]:
 
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
-    def _write_files(
-        plain_path: Path,
-        mobile_path: Path,
-        b64_path: Path,
-        mobile_b64_path: Path,
-        uris: list[str],
-        pool_name: str
-    ) -> None:
-        # Полная текстовая подписка
-        header = (
-            f"# VPN Configs — {pool_name} pool\n"
-            f"# Updated: {timestamp}\n"
-            f"# Total: {len(uris)} configs\n"
-            f"# Checked via HTTP GET through xray SOCKS5 proxy\n"
-            "#\n"
-        )
-        with open(plain_path, "w", encoding="utf-8") as f:
-            f.write(header)
-            for uri in uris:
-                f.write(uri + "\n")
+    # Пишем safe.txt
+    header_safe = (
+        f"# VPN Configs — SAFE pool\n"
+        f"# Updated: {timestamp}\n"
+        f"# Total: {len(safe_uris)} configs\n"
+        f"# Checked via HTTP GET through xray SOCKS5 proxy\n"
+        "#\n"
+    )
+    with open(SAFE_FILE, "w", encoding="utf-8") as f:
+        f.write(header_safe)
+        for uri in safe_uris:
+            f.write(uri + "\n")
 
-        # Мобильная текстовая подписка (ТОП-100)
-        mobile_uris = uris[:100]
-        header_mobile = (
-            f"# VPN Configs — {pool_name} pool (Mobile, TOP-100)\n"
-            f"# Updated: {timestamp}\n"
-            f"# Total: {len(mobile_uris)} configs\n"
-            f"# Checked via HTTP GET through xray SOCKS5 proxy\n"
-            "#\n"
-        )
-        with open(mobile_path, "w", encoding="utf-8") as f:
-            f.write(header_mobile)
-            for uri in mobile_uris:
-                f.write(uri + "\n")
+    # Пишем safe_mobile.txt
+    safe_mobile = safe_uris[:100]
+    header_safe_mobile = (
+        f"# VPN Configs — SAFE pool (Mobile, TOP-100)\n"
+        f"# Updated: {timestamp}\n"
+        f"# Total: {len(safe_mobile)} configs\n"
+        f"# Checked via HTTP GET through xray SOCKS5 proxy\n"
+        "#\n"
+    )
+    with open(SAFE_MOBILE_FILE, "w", encoding="utf-8") as f:
+        f.write(header_safe_mobile)
+        for uri in safe_mobile:
+            f.write(uri + "\n")
 
-        # Base64 подписки (без комментариев, чистые URI)
-        plain_b64_content = base64.b64encode(("\n".join(uris) + "\n").encode("utf-8")).decode("utf-8")
-        with open(b64_path, "w", encoding="utf-8") as f:
-            f.write(plain_b64_content)
+    # Пишем white.txt
+    header_white = (
+        f"# VPN Configs — WHITE pool\n"
+        f"# Updated: {timestamp}\n"
+        f"# Total: {len(white_uris)} configs\n"
+        f"# Checked via HTTP GET through xray SOCKS5 proxy\n"
+        "#\n"
+    )
+    with open(WHITE_FILE, "w", encoding="utf-8") as f:
+        f.write(header_white)
+        for uri in white_uris:
+            f.write(uri + "\n")
 
-        mobile_b64_content = base64.b64encode(("\n".join(mobile_uris) + "\n").encode("utf-8")).decode("utf-8")
-        with open(mobile_b64_path, "w", encoding="utf-8") as f:
-            f.write(mobile_b64_content)
+    # Пишем white_mobile.txt
+    white_mobile = white_uris[:100]
+    header_white_mobile = (
+        f"# VPN Configs — WHITE pool (Mobile, TOP-100)\n"
+        f"# Updated: {timestamp}\n"
+        f"# Total: {len(white_mobile)} configs\n"
+        f"# Checked via HTTP GET through xray SOCKS5 proxy\n"
+        "#\n"
+    )
+    with open(WHITE_MOBILE_FILE, "w", encoding="utf-8") as f:
+        f.write(header_white_mobile)
+        for uri in white_mobile:
+            f.write(uri + "\n")
 
-        logger.info("Записаны файлы %s (%d) и %s (%d)", plain_path.name, len(uris), mobile_path.name, len(mobile_uris))
+    # Пишем all.txt
+    header_all = (
+        f"# VPN Configs — ALL pool\n"
+        f"# Updated: {timestamp}\n"
+        f"# Total: {len(all_uris)} configs\n"
+        f"# Checked via HTTP GET through xray SOCKS5 proxy\n"
+        "#\n"
+    )
+    with open(ALL_FILE, "w", encoding="utf-8") as f:
+        f.write(header_all)
+        for uri in all_uris:
+            f.write(uri + "\n")
 
-    _write_files(SAFE_FILE, SAFE_MOBILE_FILE, SAFE_B64_FILE, SAFE_MOBILE_B64_FILE, safe_uris, "SAFE")
-    _write_files(WHITE_FILE, WHITE_MOBILE_FILE, WHITE_B64_FILE, WHITE_MOBILE_B64_FILE, white_uris, "WHITE")
-    _write_files(ALL_FILE, ALL_MOBILE_FILE, ALL_B64_FILE, ALL_MOBILE_B64_FILE, all_uris, "ALL")
-
+    logger.info("Файлы успешно записаны в output/")
     return len(safe_uris), len(white_uris)
 
 
