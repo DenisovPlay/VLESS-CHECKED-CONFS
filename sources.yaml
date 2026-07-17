@@ -1,0 +1,305 @@
+sources:
+  # ══════════════════════════════════════════════════════════════════════════
+  # igareck/vpn-configs-for-russia
+  # BLACK = SAFE (обычные сервера, обходят чёрный список РКН)
+  # WHITE = WHITE (обходят белый список РКН)
+  # ══════════════════════════════════════════════════════════════════════════
+
+  # ── SAFE (BLACK) ──────────────────────────────────────────────────────────
+  - url: "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS.txt"
+    pool: safe
+    description: "igareck: VLESS чёрный список (полная)"
+
+  - url: "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_VLESS_RUS_mobile.txt"
+    pool: safe
+    description: "igareck: VLESS чёрный список (ТОП-150 для телефона)"
+
+  - url: "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/BLACK_SS+All_RUS.txt"
+    pool: safe
+    description: "igareck: SS+Hysteria2+VMess+Trojan чёрный список"
+
+  # ── WHITE ──────────────────────────────────────────────────────────────────
+  - url: "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/Vless-Reality-White-Lists-Rus-Mobile.txt"
+    pool: white
+    description: "igareck: VLESS Reality белый список мобильный №1 (CIDR, ТОП-150)"
+
+  - url: "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/WHITE-CIDR-RU-all.txt"
+    pool: white
+    description: "igareck: CIDR белый список полный (все подсети)"
+
+  - url: "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/WHITE-CIDR-RU-checked.txt"
+    pool: white
+    description: "igareck: CIDR белый список (VK, Yandex, CDNVideo, Beeline)"
+
+  - url: "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/WHITE-SNI-RU-all.txt"
+    pool: white
+    description: "igareck: SNI белый список (обход SNI-блокировок)"
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # AvenCores/goida-vpn-configs — githubmirror 1-26
+  # Рекомендованные: 1, 6, 22, 23, 24, 25
+  # Обход SNI/CIDR белых списков: 26
+  # ══════════════════════════════════════════════════════════════════════════
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/1.txt"
+    pool: safe
+    description: "AvenCores: channel 1 (рекомендован)"
+
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/2.txt"
+    pool: safe
+    description: "AvenCores: channel 2"
+
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/3.txt"
+    pool: safe
+    description: "AvenCores: channel 3"
+
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/4.txt"
+    pool: safe
+    description: "AvenCores: channel 4"
+
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/5.txt"
+    pool: safe
+    description: "AvenCores: channel 5"
+
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/6.txt"
+    pool: safe
+    description: "AvenCores: channel 6 (рекомендован)"
+
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/7.txt"
+    pool: safe
+    description: "AvenCores: channel 7"
+
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/8.txt"
+    pool: safe
+    description: "AvenCores: channel 8"
+
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/9.txt"
+    pool: safe
+    description: "AvenCores: channel 9"
+
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/10.txt"
+    pool: safe
+    description: "AvenCores: channel 10"
+
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/11.txt"
+    pool: safe
+    description: "AvenCores: channel 11"
+
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/12.txt"
+    pool: safe
+    description: "AvenCores: channel 12"
+
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/13.txt"
+    pool: safe
+    description: "AvenCores: channel 13"
+
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/14.txt"
+    pool: safe
+    description: "AvenCores: channel 14"
+
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/15.txt"
+    pool: safe
+    description: "AvenCores: channel 15"
+
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/16.txt"
+    pool: safe
+    description: "AvenCores: channel 16"
+
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/17.txt"
+    pool: safe
+    description: "AvenCores: channel 17"
+
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/18.txt"
+    pool: safe
+    description: "AvenCores: channel 18"
+
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/19.txt"
+    pool: safe
+    description: "AvenCores: channel 19"
+
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/20.txt"
+    pool: safe
+    description: "AvenCores: channel 20"
+
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/21.txt"
+    pool: safe
+    description: "AvenCores: channel 21"
+
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/22.txt"
+    pool: safe
+    description: "AvenCores: channel 22 (рекомендован)"
+
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/23.txt"
+    pool: safe
+    description: "AvenCores: channel 23 (рекомендован)"
+
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/24.txt"
+    pool: safe
+    description: "AvenCores: channel 24 (рекомендован)"
+
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/25.txt"
+    pool: safe
+    description: "AvenCores: channel 25 (рекомендован)"
+
+  - url: "https://raw.githubusercontent.com/AvenCores/goida-vpn-configs/main/githubmirror/26.txt"
+    pool: white
+    description: "AvenCores: channel 26 (обход SNI/CIDR белых списков)"
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # hiztin/VLESS-PO-GRIBI — subscriptions 1-25
+  # ══════════════════════════════════════════════════════════════════════════
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/1.txt"
+    pool: safe
+    description: "hiztin: subscription 1"
+
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/2.txt"
+    pool: safe
+    description: "hiztin: subscription 2"
+
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/3.txt"
+    pool: safe
+    description: "hiztin: subscription 3"
+
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/4.txt"
+    pool: safe
+    description: "hiztin: subscription 4"
+
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/5.txt"
+    pool: safe
+    description: "hiztin: subscription 5"
+
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/6.txt"
+    pool: safe
+    description: "hiztin: subscription 6"
+
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/7.txt"
+    pool: safe
+    description: "hiztin: subscription 7"
+
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/8.txt"
+    pool: safe
+    description: "hiztin: subscription 8"
+
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/9.txt"
+    pool: safe
+    description: "hiztin: subscription 9"
+
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/10.txt"
+    pool: safe
+    description: "hiztin: subscription 10"
+
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/11.txt"
+    pool: safe
+    description: "hiztin: subscription 11"
+
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/12.txt"
+    pool: safe
+    description: "hiztin: subscription 12"
+
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/13.txt"
+    pool: safe
+    description: "hiztin: subscription 13"
+
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/14.txt"
+    pool: safe
+    description: "hiztin: subscription 14"
+
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/15.txt"
+    pool: safe
+    description: "hiztin: subscription 15"
+
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/16.txt"
+    pool: safe
+    description: "hiztin: subscription 16"
+
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/17.txt"
+    pool: safe
+    description: "hiztin: subscription 17"
+
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/18.txt"
+    pool: safe
+    description: "hiztin: subscription 18"
+
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/19.txt"
+    pool: safe
+    description: "hiztin: subscription 19"
+
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/20.txt"
+    pool: safe
+    description: "hiztin: subscription 20"
+
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/21.txt"
+    pool: safe
+    description: "hiztin: subscription 21"
+
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/22.txt"
+    pool: safe
+    description: "hiztin: subscription 22"
+
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/23.txt"
+    pool: safe
+    description: "hiztin: subscription 23"
+
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/24.txt"
+    pool: safe
+    description: "hiztin: subscription 24"
+
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/subscriptions/25.txt"
+    pool: safe
+    description: "hiztin: subscription 25"
+
+  # hiztin — общая подписка (sub.txt ~1MB, много конфигов)
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/sub.txt"
+    pool: safe
+    description: "hiztin: общая подписка (все конфиги)"
+
+  - url: "https://raw.githubusercontent.com/hiztin/VLESS-PO-GRIBI/main/deploy/sub_base64.txt"
+    pool: safe
+    description: "hiztin: общая подписка base64"
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # Дополнительные агрегаторы
+  # ══════════════════════════════════════════════════════════════════════════
+  - url: "https://raw.githubusercontent.com/mahdibland/V2RayAggregator/master/Eternity.txt"
+    pool: safe
+    description: "mahdibland: V2Ray агрегатор"
+
+  - url: "https://raw.githubusercontent.com/Surfboardv2ray/v2ray-worker-sub/master/Eternity"
+    pool: safe
+    description: "Surfboardv2ray: worker sub"
+
+  - url: "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.txt"
+    pool: safe
+    description: "peasoft: NoMoreWalls"
+
+  - url: "https://raw.githubusercontent.com/ALIILAPRO/v2rayNG-Config/main/sub.txt"
+    pool: safe
+    description: "ALIILAPRO: v2rayNG sub"
+
+  - url: "https://raw.githubusercontent.com/mfuu/v2ray/master/v2ray"
+    pool: safe
+    description: "mfuu: v2ray"
+
+  # ══════════════════════════════════════════════════════════════════════════
+  # Epodonios/v2ray-configs — Splitted-By-Protocol
+  # ══════════════════════════════════════════════════════════════════════════
+  - url: "https://github.com/Epodonios/v2ray-configs/raw/main/Splitted-By-Protocol/vless.txt"
+    pool: safe
+    description: "Epodonios: VLESS configs"
+
+  - url: "https://github.com/Epodonios/v2ray-configs/raw/main/Splitted-By-Protocol/vmess.txt"
+    pool: safe
+    description: "Epodonios: VMess configs"
+
+  - url: "https://github.com/Epodonios/v2ray-configs/raw/main/Splitted-By-Protocol/ss.txt"
+    pool: safe
+    description: "Epodonios: Shadowsocks configs"
+
+  - url: "https://github.com/Epodonios/v2ray-configs/raw/main/Splitted-By-Protocol/ssr.txt"
+    pool: safe
+    description: "Epodonios: ShadowsocksR configs (ignored if unsupported)"
+
+  - url: "https://github.com/Epodonios/v2ray-configs/raw/main/Splitted-By-Protocol/trojan.txt"
+    pool: safe
+    description: "Epodonios: Trojan configs"
+
+

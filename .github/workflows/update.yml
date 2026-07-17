@@ -1,0 +1,64 @@
+name: Update VPN Configs
+
+on:
+  schedule:
+    # Каждые 6 часов: 00:00, 06:00, 12:00, 18:00 UTC
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      workers:
+        description: 'Количество воркеров'
+        required: false
+        default: '50'
+      limit:
+        description: 'Ограничить кол-во конфигов (0 = без ограничений)'
+        required: false
+        default: '0'
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+
+      - name: Run collector & checker
+        env:
+          PYTHONUNBUFFERED: "1"
+        run: |
+          python main.py \
+            --workers ${{ github.event.inputs.workers || '50' }} \
+            --limit ${{ github.event.inputs.limit || '0' }} \
+            --no-push \
+            -v
+
+      - name: Commit and push results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add output/
+          if git diff --staged --quiet; then
+            echo "Нет изменений в output/"
+          else
+            SAFE=$(grep -c "^vless\|^vmess\|^trojan\|^ss" output/safe.txt 2>/dev/null || echo 0)
+            WHITE=$(grep -c "^vless\|^vmess\|^trojan\|^ss" output/white.txt 2>/dev/null || echo 0)
+            git commit -m "chore: update configs [$(date -u +'%Y-%m-%d %H:%M UTC')] safe=${SAFE} white=${WHITE}"
+            git push
+          fi
