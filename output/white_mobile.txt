@@ -1,4 +1,4 @@
-# VPN Configs — WHITE pool
+# VPN Configs — WHITE pool (Mobile, TOP-100)
 # Updated: 2026-07-17 22:56 UTC
 # Total: 0 configs
 # Checked via HTTP GET through xray SOCKS5 proxy

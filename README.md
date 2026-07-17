@@ -6,13 +6,54 @@
 
 [![Update VPN Configs](https://github.com/DenisovPlay/VLESS-CHECKED-CONFS/actions/workflows/update.yml/badge.svg)](https://github.com/DenisovPlay/VLESS-CHECKED-CONFS/actions/workflows/update.yml)
 
-## Пулы конфигов
+## Пулы конфигов и подписки
 
-| Файл | Описание |
-|------|----------|
-| [`output/safe.txt`](output/safe.txt) | Обычные серверы в разных странах |
-| [`output/white.txt`](output/white.txt) | Серверы, работающие при **белом списке РКН** |
-| [`output/all.txt`](output/all.txt) | Все живые конфиги вместе |
+Все подписки доступны в двух форматах:
+1. **TXT (Plain)** — простой список серверов (один URI на строку). Подходит для большинства современных клиентов (Streisand, Shadowrocket, Nekobox и др.).
+2. **Base64** — стандартный закодированный формат подписки. Требуется для клиентов, которые не умеют читать обычный текст напрямую (например, v2rayNG, Happ и др.).
+
+### 📂 Полные подписки (все рабочие сервера)
+| Название | Пул | TXT ссылка | Base64 ссылка |
+|---|---|---|---|
+| **SAFE** (обычные) | Сервера в разных странах | [`safe.txt`](https://raw.githubusercontent.com/DenisovPlay/VLESS-CHECKED-CONFS/main/output/safe.txt) | [`safe_base64.txt`](https://raw.githubusercontent.com/DenisovPlay/VLESS-CHECKED-CONFS/main/output/safe_base64.txt) |
+| **WHITE** (белый список) | Обход белых списков РКН | [`white.txt`](https://raw.githubusercontent.com/DenisovPlay/VLESS-CHECKED-CONFS/main/output/white.txt) | [`white_base64.txt`](https://raw.githubusercontent.com/DenisovPlay/VLESS-CHECKED-CONFS/main/output/white_base64.txt) |
+| **ALL** (микс) | Все живые конфиги | [`all.txt`](https://raw.githubusercontent.com/DenisovPlay/VLESS-CHECKED-CONFS/main/output/all.txt) | [`all_base64.txt`](https://raw.githubusercontent.com/DenisovPlay/VLESS-CHECKED-CONFS/main/output/all_base64.txt) |
+
+### 📱 Мобильные подписки (ТОП-100 лучших серверов по latency)
+> [!TIP]
+> Рекомендуется для мобильных устройств, чтобы клиент не зависал при перегрузке тысячами конфигов.
+
+| Название | Пул | TXT ссылка | Base64 ссылка |
+|---|---|---|---|
+| **SAFE Mobile** | ТОП-100 обычных | [`safe_mobile.txt`](https://raw.githubusercontent.com/DenisovPlay/VLESS-CHECKED-CONFS/main/output/safe_mobile.txt) | [`safe_mobile_base64.txt`](https://raw.githubusercontent.com/DenisovPlay/VLESS-CHECKED-CONFS/main/output/safe_mobile_base64.txt) |
+| **WHITE Mobile** | ТОП-100 для белого списка | [`white_mobile.txt`](https://raw.githubusercontent.com/DenisovPlay/VLESS-CHECKED-CONFS/main/output/white_mobile.txt) | [`white_mobile_base64.txt`](https://raw.githubusercontent.com/DenisovPlay/VLESS-CHECKED-CONFS/main/output/white_mobile_base64.txt) |
+| **ALL Mobile** | ТОП-100 микс | [`all_mobile.txt`](https://raw.githubusercontent.com/DenisovPlay/VLESS-CHECKED-CONFS/main/output/all_mobile.txt) | [`all_mobile_base64.txt`](https://raw.githubusercontent.com/DenisovPlay/VLESS-CHECKED-CONFS/main/output/all_mobile_base64.txt) |
+
+---
+
+## 📲 Как добавить в приложения (Happ, v2rayNG, Nekobox и др.)
+
+Все эти подписки полностью совместимы с популярными VPN-клиентами.
+
+### 1. Happ (iOS / Android)
+- Скопируйте **Base64 ссылку** нужной вам подписки (например, `safe_mobile_base64.txt`).
+- Откройте приложение **Happ**.
+- Перейдите в настройки подписок / добавить новый ресурс.
+- Вставьте ссылку и нажмите "Обновить".
+- Приложение автоматически скачает и расшифрует все сервера, добавив в имена красивые эмодзи флагов стран.
+
+### 2. v2rayNG (Android)
+- Скопируйте **Base64 ссылку** (v2rayNG требует строго Base64 формат).
+- Откройте меню слева → **Группы подписок** (Subscription grouping).
+- Нажмите `+` в правом верхнем углу, введите любое имя и вставьте скопированную URL ссылку.
+- Сохраните, затем на главном экране нажмите три точки вверху → **Обновить подписку** (Update subscription).
+
+### 3. Nekobox (Android / Windows) / Streisand (iOS)
+- Скопируйте либо **TXT**, либо **Base64 ссылку** (эти приложения поддерживают оба формата).
+- В Nekobox: меню → Группы → Добавить подписку → Вставьте URL.
+- В Streisand: нажмите `+` → Добавить подписку → Вставьте URL.
+- Обновите список.
+
 
 ## Как работает
 

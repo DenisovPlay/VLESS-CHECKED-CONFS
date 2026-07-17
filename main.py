@@ -23,8 +23,10 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+import base64
 from checker import CheckResult, check_all
 from collector import Config, collect
+from country_helper import enrich_config_with_country
 
 logger = logging.getLogger(__name__)
 
@@ -46,9 +48,26 @@ def _setup_logging(verbose: bool) -> None:
     logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 
-def _write_output(results: list[CheckResult]) -> tuple[int, int]:
+# Файлы вывода
+SAFE_FILE = OUTPUT_DIR / "safe.txt"
+SAFE_MOBILE_FILE = OUTPUT_DIR / "safe_mobile.txt"
+SAFE_B64_FILE = OUTPUT_DIR / "safe_base64.txt"
+SAFE_MOBILE_B64_FILE = OUTPUT_DIR / "safe_mobile_base64.txt"
+
+WHITE_FILE = OUTPUT_DIR / "white.txt"
+WHITE_MOBILE_FILE = OUTPUT_DIR / "white_mobile.txt"
+WHITE_B64_FILE = OUTPUT_DIR / "white_base64.txt"
+WHITE_MOBILE_B64_FILE = OUTPUT_DIR / "white_mobile_base64.txt"
+
+ALL_FILE = OUTPUT_DIR / "all.txt"
+ALL_MOBILE_FILE = OUTPUT_DIR / "all_mobile.txt"
+ALL_B64_FILE = OUTPUT_DIR / "all_base64.txt"
+ALL_MOBILE_B64_FILE = OUTPUT_DIR / "all_mobile_base64.txt"
+
+
+async def _write_output(results: list[CheckResult]) -> tuple[int, int]:
     """
-    Записывает живые конфиги в output/safe.txt и output/white.txt.
+    Записывает живые конфиги в текстовые и base64 подписки.
     Возвращает (safe_count, white_count).
     """
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -58,13 +77,31 @@ def _write_output(results: list[CheckResult]) -> tuple[int, int]:
     # Сортируем по latency (быстрые — в начало)
     alive_results.sort(key=lambda r: r.latency_ms or 99999)
 
+    # 1. Параллельно обогащаем живые конфиги эмодзи флагами стран
+    logger.info("Определяем страны и добавляем эмодзи флаги в имена серверов...")
+    async def _enrich(r: CheckResult):
+        try:
+            r.config.uri = await enrich_config_with_country(r.config.uri)
+        except Exception as e:
+            logger.debug("Не удалось добавить флаг к %s: %s", r.config.uri[:50], e)
+
+    await asyncio.gather(*(_enrich(r) for r in alive_results))
+
     safe_uris = [r.config.uri for r in alive_results if r.config.pool == "safe"]
     white_uris = [r.config.uri for r in alive_results if r.config.pool == "white"]
     all_uris = [r.config.uri for r in alive_results]
 
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
-    def _write_file(path: Path, uris: list[str], pool_name: str) -> None:
+    def _write_files(
+        plain_path: Path,
+        mobile_path: Path,
+        b64_path: Path,
+        mobile_b64_path: Path,
+        uris: list[str],
+        pool_name: str
+    ) -> None:
+        # Полная текстовая подписка
         header = (
             f"# VPN Configs — {pool_name} pool\n"
             f"# Updated: {timestamp}\n"
@@ -72,15 +109,39 @@ def _write_output(results: list[CheckResult]) -> tuple[int, int]:
             f"# Checked via HTTP GET through xray SOCKS5 proxy\n"
             "#\n"
         )
-        with open(path, "w", encoding="utf-8") as f:
+        with open(plain_path, "w", encoding="utf-8") as f:
             f.write(header)
             for uri in uris:
                 f.write(uri + "\n")
-        logger.info("Записан %s: %d конфигов", path.name, len(uris))
 
-    _write_file(SAFE_FILE, safe_uris, "SAFE")
-    _write_file(WHITE_FILE, white_uris, "WHITE")
-    _write_file(ALL_FILE, all_uris, "ALL")
+        # Мобильная текстовая подписка (ТОП-100)
+        mobile_uris = uris[:100]
+        header_mobile = (
+            f"# VPN Configs — {pool_name} pool (Mobile, TOP-100)\n"
+            f"# Updated: {timestamp}\n"
+            f"# Total: {len(mobile_uris)} configs\n"
+            f"# Checked via HTTP GET through xray SOCKS5 proxy\n"
+            "#\n"
+        )
+        with open(mobile_path, "w", encoding="utf-8") as f:
+            f.write(header_mobile)
+            for uri in mobile_uris:
+                f.write(uri + "\n")
+
+        # Base64 подписки (без комментариев, чистые URI)
+        plain_b64_content = base64.b64encode(("\n".join(uris) + "\n").encode("utf-8")).decode("utf-8")
+        with open(b64_path, "w", encoding="utf-8") as f:
+            f.write(plain_b64_content)
+
+        mobile_b64_content = base64.b64encode(("\n".join(mobile_uris) + "\n").encode("utf-8")).decode("utf-8")
+        with open(mobile_b64_path, "w", encoding="utf-8") as f:
+            f.write(mobile_b64_content)
+
+        logger.info("Записаны файлы %s (%d) и %s (%d)", plain_path.name, len(uris), mobile_path.name, len(mobile_uris))
+
+    _write_files(SAFE_FILE, SAFE_MOBILE_FILE, SAFE_B64_FILE, SAFE_MOBILE_B64_FILE, safe_uris, "SAFE")
+    _write_files(WHITE_FILE, WHITE_MOBILE_FILE, WHITE_B64_FILE, WHITE_MOBILE_B64_FILE, white_uris, "WHITE")
+    _write_files(ALL_FILE, ALL_MOBILE_FILE, ALL_B64_FILE, ALL_MOBILE_B64_FILE, all_uris, "ALL")
 
     return len(safe_uris), len(white_uris)
 
@@ -158,7 +219,7 @@ async def _run(args: argparse.Namespace) -> None:
 
     # ── 3. Write output ──────────────────────────────────────────────────
     logger.info("═══ ЭТАП 3: Запись результатов ═══")
-    safe_count, white_count = _write_output(results)
+    safe_count, white_count = await _write_output(results)
 
     # ── 4. Stats ─────────────────────────────────────────────────────────
     logger.info("══════════════════════════════════════")
