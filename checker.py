@@ -38,8 +38,8 @@ CHECK_URL = "http://cp.cloudflare.com/"
 # Fallback URL
 CHECK_URL_FALLBACK = "http://www.gstatic.com/generate_204"
 
-XRAY_STARTUP_DELAY = 1.2   # секунды ожидания после запуска xray
-PROXY_TIMEOUT = 15.0        # таймаут HTTP-запроса через прокси
+XRAY_STARTUP_DELAY = 1.0   # секунды ожидания после запуска xray
+PROXY_TIMEOUT = 10.0        # таймаут HTTP-запроса через прокси
 
 
 class CheckResult(NamedTuple):
@@ -163,8 +163,9 @@ async def _http_get_via_socks5(socks_port: int) -> tuple[bool, str | None]:
 
 async def check_all(
     configs: list[Config],
-    workers: int = 50,
+    workers: int = 200,
     progress: bool = True,
+    on_alive: Any | None = None,
 ) -> list[CheckResult]:
     """
     Проверяет все конфиги параллельно.
@@ -173,6 +174,7 @@ async def check_all(
         configs: список конфигов из collector
         workers: количество параллельных воркеров
         progress: выводить ли прогресс
+        on_alive: async callback, вызываемый сразу при нахождении живого конфига
 
     Returns:
         Список CheckResult (живые и мёртвые)
@@ -193,6 +195,12 @@ async def check_all(
         done += 1
         if result.alive:
             alive_count += 1
+            if on_alive:
+                if asyncio.iscoroutinefunction(on_alive):
+                    asyncio.create_task(on_alive(result))
+                else:
+                    on_alive(result)
+
         if progress:
             status = "✓" if result.alive else "✗"
             latency = f" {result.latency_ms}ms" if result.latency_ms else ""
@@ -201,21 +209,25 @@ async def check_all(
                 end="",
                 flush=True,
             )
+        results.append(result)
         return result
 
     tasks = [_wrapped(cfg) for cfg in configs]
-    results = await asyncio.gather(*tasks)
+    try:
+        await asyncio.gather(*tasks)
+    except (asyncio.CancelledError, KeyboardInterrupt):
+        logger.info("\nПроверка прервана. Проверено конфигов: %d", len(results))
+    finally:
+        if progress:
+            print()  # новая строка после прогресса
 
-    if progress:
-        print()  # новая строка после прогресса
-
-    alive = [r for r in results if r.alive]
-    dead = [r for r in results if not r.alive]
-    logger.info(
-        "Результат: %d живых / %d мёртвых из %d",
-        len(alive), len(dead), total,
-    )
-    return list(results)
+        alive = [r for r in results if r.alive]
+        dead = [r for r in results if not r.alive]
+        logger.info(
+            "Результат: %d живых / %d мёртвых из %d проверенных",
+            len(alive), len(dead), len(results),
+        )
+        return results
 
 
 if __name__ == "__main__":
@@ -225,7 +237,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 
-    workers = int(sys.argv[1]) if len(sys.argv) > 1 else 50
+    workers = int(sys.argv[1]) if len(sys.argv) > 1 else 200
 
     async def _main():
         configs = await collect()

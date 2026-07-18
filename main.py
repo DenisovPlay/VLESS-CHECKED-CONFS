@@ -20,6 +20,8 @@ import asyncio
 import logging
 import subprocess
 import sys
+import time
+import hashlib
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -32,8 +34,11 @@ logger = logging.getLogger(__name__)
 
 OUTPUT_DIR = Path(__file__).parent / "output"
 SAFE_FILE = OUTPUT_DIR / "safe.txt"
+SAFE_MOBILE_FILE = OUTPUT_DIR / "safe_mobile.txt"
 WHITE_FILE = OUTPUT_DIR / "white.txt"
+WHITE_MOBILE_FILE = OUTPUT_DIR / "white_mobile.txt"
 ALL_FILE = OUTPUT_DIR / "all.txt"
+BAD_CONFIGS_FILE = Path(__file__).parent / ".bad_configs.txt"
 
 
 def _setup_logging(verbose: bool) -> None:
@@ -48,17 +53,109 @@ def _setup_logging(verbose: bool) -> None:
     logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 
-# Файлы вывода
-SAFE_FILE = OUTPUT_DIR / "safe.txt"
-SAFE_MOBILE_FILE = OUTPUT_DIR / "safe_mobile.txt"
-WHITE_FILE = OUTPUT_DIR / "white.txt"
-WHITE_MOBILE_FILE = OUTPUT_DIR / "white_mobile.txt"
-ALL_FILE = OUTPUT_DIR / "all.txt"
+def _get_clean_uri_hash(uri: str) -> str:
+    """Возвращает SHA-256 хеш очищенного URI (без ремарки после #)."""
+    clean_uri = uri.split("#")[0]
+    return hashlib.sha256(clean_uri.encode("utf-8")).hexdigest()
+
+
+def _load_bad_configs() -> set[str]:
+    """Загружает хеши неработающих конфигов, игнорируя те, что старше 7 дней."""
+    bad_hashes = set()
+    if not BAD_CONFIGS_FILE.exists():
+        return bad_hashes
+
+    current_time = int(time.time())
+    expired_count = 0
+    loaded_count = 0
+
+    try:
+        with open(BAD_CONFIGS_FILE, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or "," not in line:
+                    continue
+                h, ts_str = line.split(",", 1)
+                try:
+                     ts = int(ts_str)
+                     # 7 дней = 604800 секунд
+                     if current_time - ts < 604800:
+                         bad_hashes.add(h)
+                         loaded_count += 1
+                     else:
+                         expired_count += 1
+                except ValueError:
+                     pass
+    except Exception as e:
+        logger.warning("Не удалось загрузить кэш плохих конфигов: %s", e)
+
+    if expired_count:
+        logger.info("Удалено устаревших плохих конфигов из кэша: %d", expired_count)
+    if loaded_count:
+        logger.info("Загружено активных плохих конфигов из кэша: %d", loaded_count)
+    return bad_hashes
+
+
+def _save_bad_configs(failed_results: list[CheckResult]) -> None:
+    """Сохраняет хеши проваленных проверок в кэш с текущим таймстампом, удаляя дубли и старые записи."""
+    current_time = int(time.time())
+    existing_entries = {}
+
+    # Читаем старый кэш
+    if BAD_CONFIGS_FILE.exists():
+        try:
+            with open(BAD_CONFIGS_FILE, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or "," not in line:
+                        continue
+                    h, ts_str = line.split(",", 1)
+                    try:
+                        ts = int(ts_str)
+                        if current_time - ts < 604800:
+                            existing_entries[h] = ts
+                    except ValueError:
+                        pass
+        except Exception:
+            pass
+
+    # Добавляем свежие плохие конфиги
+    new_added = 0
+    for r in failed_results:
+        h = _get_clean_uri_hash(r.config.uri)
+        if h not in existing_entries:
+            new_added += 1
+        existing_entries[h] = current_time
+
+    # Перезаписываем кэш
+    try:
+        with open(BAD_CONFIGS_FILE, "w", encoding="utf-8") as f:
+            for h, ts in existing_entries.items():
+                f.write(f"{h},{ts}\n")
+        logger.info("Обновлен кэш плохих конфигов: всего в кэше %d (+%d новых)", len(existing_entries), new_added)
+    except Exception as e:
+        logger.warning("Не удалось сохранить кэш плохих конфигов: %s", e)
+
+
+def _prepare_output_files() -> None:
+    """Очищает выходные файлы и пишет начальные заголовки."""
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+
+    for path, title in [(ALL_FILE, "ALL"), (SAFE_FILE, "SAFE"), (WHITE_FILE, "WHITE")]:
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(
+                f"# VPN Configs — {title} pool\n"
+                f"# Updated: {timestamp}\n"
+                f"# Checked via HTTP GET through xray SOCKS5 proxy\n"
+                f"# (Writing on the fly)\n"
+                f"#\n"
+            )
 
 
 async def _write_output(results: list[CheckResult]) -> tuple[int, int]:
     """
-    Записывает живые конфиги в текстовые подписки.
+    Записывает живые конфиги в текстовые подписки (перезаписывает файлы отсортированной версией).
     Возвращает (safe_count, white_count).
     """
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -67,16 +164,6 @@ async def _write_output(results: list[CheckResult]) -> tuple[int, int]:
 
     # Сортируем по latency (быстрые — в начало)
     alive_results.sort(key=lambda r: r.latency_ms or 99999)
-
-    # 1. Параллельно обогащаем живые конфиги эмодзи флагами стран
-    logger.info("Определяем страны и добавляем эмодзи флаги в имена серверов...")
-    async def _enrich(r: CheckResult):
-        try:
-            r.config.uri = await enrich_config_with_country(r.config.uri)
-        except Exception as e:
-            logger.debug("Не удалось добавить флаг к %s: %s", r.config.uri[:50], e)
-
-    await asyncio.gather(*(_enrich(r) for r in alive_results))
 
     safe_uris = [r.config.uri for r in alive_results if r.config.pool == "safe"]
     white_uris = [r.config.uri for r in alive_results if r.config.pool == "white"]
@@ -203,10 +290,24 @@ async def _run(args: argparse.Namespace) -> None:
         logger.error("Не собрано ни одного конфига!")
         sys.exit(1)
 
+    # Загружаем кэш плохих конфигов и отфильтровываем их
+    bad_hashes = _load_bad_configs()
+    if bad_hashes:
+        filtered_configs = []
+        skipped_count = 0
+        for c in configs:
+            h = _get_clean_uri_hash(c.uri)
+            if h in bad_hashes:
+                skipped_count += 1
+            else:
+                filtered_configs.append(c)
+        logger.info("Пропущено ранее неработающих конфигов по кэшу: %d", skipped_count)
+        configs = filtered_configs
+
     safe_raw = sum(1 for c in configs if c.pool == "safe")
     white_raw = sum(1 for c in configs if c.pool == "white")
     logger.info(
-        "Собрано: %d конфигов (safe=%d, white=%d)",
+        "Собрано для проверки: %d конфигов (safe=%d, white=%d)",
         len(configs), safe_raw, white_raw,
     )
 
@@ -214,19 +315,56 @@ async def _run(args: argparse.Namespace) -> None:
         logger.info("Режим --collect-only, выходим")
         return
 
+    # Очищаем файлы и готовим заголовки перед проверкой
+    _prepare_output_files()
+
+    # Сейфлок для параллельной записи на лету
+    write_lock = asyncio.Lock()
+    alive_results_list = []
+
+    async def on_alive(result: CheckResult):
+        nonlocal alive_results_list
+        # Обогащаем эмодзи-флагом
+        try:
+            result.config.uri = await enrich_config_with_country(result.config.uri)
+        except Exception:
+            pass
+
+        alive_results_list.append(result)
+
+        # Пишем в файлы на лету
+        async with write_lock:
+            try:
+                with open(ALL_FILE, "a", encoding="utf-8") as f:
+                    f.write(result.config.uri + "\n")
+                if result.config.pool == "safe":
+                    with open(SAFE_FILE, "a", encoding="utf-8") as f:
+                        f.write(result.config.uri + "\n")
+                elif result.config.pool == "white":
+                    with open(WHITE_FILE, "a", encoding="utf-8") as f:
+                        f.write(result.config.uri + "\n")
+            except Exception as e:
+                logger.debug("Ошибка записи на лету: %s", e)
+
     # ── 2. Check ─────────────────────────────────────────────────────────
     logger.info("═══ ЭТАП 2: Проверка через прокси (%d воркеров) ═══", args.workers)
     results: list[CheckResult] = await check_all(
         configs,
         workers=args.workers,
         progress=True,
+        on_alive=on_alive
     )
+
+    # Достаем все результаты, которые провалились (для кэша)
+    failed = [r for r in results if not r.alive]
+    if failed:
+        _save_bad_configs(failed)
 
     alive = [r for r in results if r.alive]
     if not alive:
         logger.warning("Ни один конфиг не прошёл проверку!")
 
-    # ── 3. Write output ──────────────────────────────────────────────────
+    # ── 3. Write output (перезаписываем начисто отсортированным по latency списком) ──
     logger.info("═══ ЭТАП 3: Запись результатов ═══")
     safe_count, white_count = await _write_output(results)
 
@@ -272,7 +410,7 @@ def main() -> None:
     parser.add_argument(
         "--workers",
         type=int,
-        default=50,
+        default=200,
         help="Количество параллельных воркеров",
     )
     parser.add_argument(
